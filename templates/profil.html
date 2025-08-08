@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Profil Pengguna{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto bg-white p-6 rounded shadow">
+    <h2 class="text-xl font-bold mb-4 text-indigo-700">👤 Profil Pengguna</h2>
+    <p><strong>Username:</strong> {{ user.username }}</p>
+    <p><strong>ID:</strong> {{ user.id }}</p>
+    <p><strong>Role:</strong> {{ user.role }}</p>
+</div>
+    
+{% endblock %}

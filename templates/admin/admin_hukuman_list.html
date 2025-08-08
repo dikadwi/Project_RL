@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title %}Kelola Hukuman{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto bg-white p-6 shadow rounded">
+  <h2 class="text-2xl font-bold text-indigo-700 mb-4">⚠️ Daftar Hukuman</h2>
+
+  <!-- Upload CSV -->
+  <form action="{{ url_for('admin_hukuman.upload_csv_hukuman') }}" method="POST" enctype="multipart/form-data" class="mb-4">
+    <input type="file" name="file" accept=".csv" required>
+    <button type="submit" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
+      📤 Upload CSV
+    </button>
+  </form>
+
+  <!-- Tombol Tambah -->
+  <button onclick="openModalAddHukuman()" class="mb-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+    ➕ Tambah Hukuman
+  </button>
+
+  <!-- Tabel Data -->
+  <table class="w-full table-auto border">
+    <thead>
+      <tr class="bg-gray-100 text-left">
+        <th class="p-2">ID</th>
+        <th class="p-2">Judul</th>
+        <th class="p-2">Deskripsi</th>
+        <th class="p-2">Skor Poin</th>
+        <th class="p-2">Target State</th>
+        <th class="p-2">Kode Action</th>
+        <th class="p-2">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for h in hukuman %}
+      <tr class="border-t">
+        <td class="p-2">{{ h.id }}</td>
+        <td class="p-2">{{ h.judul }}</td>
+        <td class="p-2">{{ h.deskripsi }}</td>
+        <td class="p-2">{{ h.skor_poin }}</td>
+        <td class="p-2">{{ h.target_state }}</td>
+        <td class="p-2">{{ h.kode_action }}</td>
+        <td class="p-2 space-x-2">
+          <button onclick="editHukuman('{{ h.id }}', '{{ h.judul|escape }}', '{{ h.deskripsi|escape }}', {{ h.skor_poin or 0 }}, '{{ h.target_state }}', {{ h.kode_action or 103 }})"
+                  class="text-blue-600 hover:underline">Edit</button>
+          <button onclick="openDeleteModal('{{ h.id }}')" class="text-red-600 hover:underline">Hapus</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal Tambah/Edit -->
+<div id="hukumanModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+  <div class="bg-white rounded shadow-md w-[90%] max-w-3xl max-h-[90vh] relative flex flex-col overflow-hidden">
+    <div class="sticky top-0 bg-white z-10 border-b px-6 py-4 flex items-center justify-between">
+      <h3 id="modalTitleHukuman" class="text-xl font-semibold">Tambah Hukuman</h3>
+      <button class="text-gray-600 hover:text-gray-800" onclick="closeHukumanModal()">✖</button>
+    </div>
+
+    <div class="px-6 py-4 overflow-y-auto">
+      <form method="POST" action="{{ url_for('admin_hukuman.save_hukuman') }}" onsubmit="syncTargetStateHukuman()">
+        <div class="mb-2">
+          <label class="font-semibold">ID (otomatis):</label>
+          <input type="text" id="hukuman_id_display" class="w-full border p-2 bg-gray-100" value="{{ next_id }}" disabled>
+          <input type="hidden" name="id" id="hukuman_id" value="{{ next_id }}">
+        </div>
+
+        <div class="mb-2">
+          <label class="font-semibold">Judul:</label>
+          <input type="text" name="judul" id="judul" class="w-full border p-2" required>
+        </div>
+
+        <div class="mb-2">
+          <label class="font-semibold">Deskripsi:</label>
+          <textarea name="deskripsi" id="deskripsi" class="w-full border p-2" required></textarea>
+        </div>
+
+        <div class="mb-2">
+          <label class="font-semibold">Skor Poin:</label>
+          <input type="number" name="skor_poin" id="skor_poin" class="w-full border p-2" required>
+        </div>
+
+        <!-- Target State -->
+        <div class="grid grid-cols-2 gap-3 mb-1">
+          <div>
+            <label class="font-semibold">VARK:</label>
+            <select id="ts_vark_h" name="ts_vark" class="w-full border p-2">
+              {% for v in vark_opts %}<option value="{{ v }}">{{ v }}</option>{% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="font-semibold">MLSQ:</label>
+            <select id="ts_mlsq_h" name="ts_mlsq" class="w-full border p-2">
+              {% for m in mlsq_opts %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="font-semibold">AMS:</label>
+            <select id="ts_ams_h" name="ts_ams" class="w-full border p-2">
+              {% for a in ams_opts %}<option value="{{ a }}">{{ a }}</option>{% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="font-semibold">Engagement:</label>
+            <select id="ts_eng_h" name="ts_eng" class="w-full border p-2">
+              {% for e in engage_opts %}<option value="{{ e }}">{{ e }}</option>{% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="font-semibold">Target State:</label>
+          <input type="text" id="target_state_preview_h" class="w-full border p-2 bg-gray-100" readonly>
+          <input type="hidden" name="target_state" id="target_state_h">
+        </div>
+
+        <div class="mb-4">
+          <label class="font-semibold">Kode Action:</label>
+          <input type="number" name="kode_action" id="kode_action" class="w-full border p-2" value="103" required>
+        </div>
+
+        <div class="sticky bottom-0 bg-white border-t -mx-6 px-6 py-3 flex justify-end gap-2">
+          <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Simpan</button>
+          <button type="button" onclick="closeHukumanModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Hapus -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+  <div class="bg-white p-6 rounded shadow-md w-full max-w-sm relative">
+    <h3 class="text-lg font-bold mb-4">Konfirmasi Hapus</h3>
+    <p>Yakin ingin menghapus hukuman ini?</p>
+    <div class="mt-4 flex justify-end gap-2">
+      <form method="POST" id="deleteForm" action="">
+        <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Ya, Hapus</button>
+      </form>
+      <button onclick="closeDeleteModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
+    </div>
+    <button class="absolute top-2 right-3 text-gray-600" onclick="closeDeleteModal()">✖</button>
+  </div>
+</div>
+
+<script>
+  function buildTargetStateHukuman() {
+    const v = document.getElementById('ts_vark_h').value;
+    const m = document.getElementById('ts_mlsq_h').value;
+    const a = document.getElementById('ts_ams_h').value;
+    const e = document.getElementById('ts_eng_h').value;
+    return `${v} + ${m} + ${a} + ${e}`;
+  }
+  function refreshPreviewHukuman() {
+    document.getElementById('target_state_preview_h').value = buildTargetStateHukuman();
+  }
+  ['ts_vark_h','ts_mlsq_h','ts_ams_h','ts_eng_h'].forEach(id => {
+    document.getElementById(id).addEventListener('change', refreshPreviewHukuman);
+  });
+  function syncTargetStateHukuman() {
+    document.getElementById('target_state_h').value = buildTargetStateHukuman();
+  }
+
+  function openModalAddHukuman() {
+    document.getElementById('hukumanModal').classList.remove('hidden');
+    document.getElementById('modalTitleHukuman').innerText = "Tambah Hukuman";
+    document.getElementById('hukuman_id').value = "{{ next_id }}";
+    document.getElementById('hukuman_id_display').value = "{{ next_id }}";
+    document.getElementById('judul').value = "";
+    document.getElementById('deskripsi').value = "";
+    document.getElementById('skor_poin').value = "";
+    document.getElementById('ts_vark_h').value = "V";
+    document.getElementById('ts_mlsq_h').value = "low";
+    document.getElementById('ts_ams_h').value  = "intrinsic";
+    document.getElementById('ts_eng_h').value  = "m1_f1_a1";
+    document.getElementById('kode_action').value = 103;
+    refreshPreviewHukuman();
+  }
+
+  function editHukuman(id, judul, deskripsi, skor_poin, target_state, kode_action) {
+    document.getElementById('hukumanModal').classList.remove('hidden');
+    document.getElementById('modalTitleHukuman').innerText = "Edit Hukuman";
+    document.getElementById('hukuman_id').value = id;
+    document.getElementById('hukuman_id_display').value = id;
+    document.getElementById('judul').value = judul;
+    document.getElementById('deskripsi').value = deskripsi;
+    document.getElementById('skor_poin').value = skor_poin;
+    document.getElementById('kode_action').value = kode_action;
+    try {
+      const parts = (target_state || '').split('+').map(s => s.trim());
+      if (parts.length === 4) {
+        document.getElementById('ts_vark_h').value = parts[0];
+        document.getElementById('ts_mlsq_h').value = parts[1];
+        document.getElementById('ts_ams_h').value  = parts[2];
+        document.getElementById('ts_eng_h').value  = parts[3];
+      }
+    } catch(e) {}
+    refreshPreviewHukuman();
+  }
+
+  function closeHukumanModal() {
+    document.getElementById('hukumanModal').classList.add('hidden');
+  }
+
+  function openDeleteModal(id) {
+    document.getElementById('deleteForm').action = `/admin/hukuman/delete/${id}`;
+    document.getElementById('deleteModal').classList.remove('hidden');
+  }
+  function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% block title %}Kelola Pelatihan{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto bg-white p-6 shadow rounded">
+    <h2 class="text-2xl font-bold text-indigo-700 mb-4">🎓 Daftar Pelatihan</h2>
+
+    <!-- Upload CSV -->
+    <form action="{{ url_for('admin_pelatihan.upload_csv_pelatihan') }}" method="POST" enctype="multipart/form-data" class="mb-4">
+        <input type="file" name="file" accept=".csv" required>
+        <button type="submit" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
+            📤 Upload CSV
+        </button>
+    </form>
+
+    <!-- Tombol Tambah -->
+    <button onclick="openPelatihanModalAdd()" class="mb-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+        ➕ Tambah Pelatihan
+    </button>
+
+    <!-- Tabel Data -->
+    <table class="w-full table-auto border">
+        <thead>
+            <tr class="bg-gray-100 text-left">
+                <th class="p-2">ID</th>
+                <th class="p-2">Judul</th>
+                <th class="p-2">Deskripsi</th>
+                <th class="p-2">Kategori</th>
+                <th class="p-2">Skor Poin</th>
+                <th class="p-2">Target State</th>
+                <th class="p-2">Kode Action</th>
+                <th class="p-2">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in pelatihan %}
+            <tr class="border-t">
+                <td class="p-2">{{ p.id }}</td>
+                <td class="p-2">{{ p.judul }}</td>
+                <td class="p-2">{{ p.deskripsi }}</td>
+                <td class="p-2">{{ p.kategori }}</td>
+                <td class="p-2">{{ p.skor_poin }}</td>
+                <td class="p-2">{{ p.target_state }}</td>
+                <td class="p-2">{{ p.kode_action }}</td>
+                <td class="p-2 space-x-2">
+                    <button onclick="editPelatihan('{{ p.id }}', '{{ p.judul }}', '{{ p.deskripsi }}', '{{ p.kategori }}', {{ p.skor_poin }}, '{{ p.target_state }}', {{ p.kode_action }})"
+                        class="text-blue-600 hover:underline">Edit</button>
+                    <button onclick="openPelatihanDeleteModal('{{ p.id }}')"
+                        class="text-red-600 hover:underline">Hapus</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Tambah/Edit -->
+<div id="pelatihanModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+  <div class="bg-white p-6 rounded shadow-md w-[90%] max-w-3xl max-h-[90vh] overflow-y-auto relative">
+    <h3 id="pelatihanModalTitle" class="text-xl font-semibold mb-4">Tambah Pelatihan</h3>
+
+    <form method="POST" action="{{ url_for('admin_pelatihan.save_pelatihan') }}" onsubmit="syncPelatihanTargetState()">
+      <!-- ID otomatis -->
+      <div class="mb-2">
+        <label class="font-semibold">ID (otomatis):</label>
+        <input type="text" id="pelatihan_id_display" class="w-full border p-2 bg-gray-100" value="{{ next_id }}" disabled>
+        <input type="hidden" name="id" id="pelatihan_id" value="{{ next_id }}">
+      </div>
+
+      <div class="mb-2">
+        <label class="font-semibold">Judul:</label>
+        <input type="text" name="judul" id="pelatihan_judul" class="w-full border p-2" required>
+      </div>
+
+      <div class="mb-2">
+        <label class="font-semibold">Deskripsi:</label>
+        <textarea name="deskripsi" id="pelatihan_deskripsi" class="w-full border p-2" required></textarea>
+      </div>
+
+      <!-- Kategori dropdown -->
+      <div class="mb-2">
+        <label class="font-semibold">Kategori:</label>
+        <select name="kategori" id="pelatihan_kategori" class="w-full border p-2" required>
+          <option value="Visual">Visual</option>
+          <option value="Auditory">Auditory</option>
+          <option value="Reading">Reading</option>
+          <option value="Kinesthetic">Kinesthetic</option>
+        </select>
+      </div>
+
+      <div class="mb-2">
+        <label class="font-semibold">Skor Poin:</label>
+        <input type="number" name="skor_poin" id="pelatihan_skor_poin" class="w-full border p-2" required>
+      </div>
+
+      <!-- Target State = 4 dropdown -->
+      <div class="grid grid-cols-2 gap-3 mb-1">
+        <div>
+          <label class="font-semibold">VARK:</label>
+          <select id="pelatihan_ts_vark" name="ts_vark" class="w-full border p-2">
+            {% for v in vark_opts %}
+              <option value="{{ v }}">{{ v }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="font-semibold">MLSQ Level:</label>
+          <select id="pelatihan_ts_mlsq" name="ts_mlsq" class="w-full border p-2">
+            {% for m in mlsq_opts %}
+              <option value="{{ m }}">{{ m }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="font-semibold">AMS:</label>
+          <select id="pelatihan_ts_ams" name="ts_ams" class="w-full border p-2">
+            {% for a in ams_opts %}
+              <option value="{{ a }}">{{ a }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="font-semibold">Engagement:</label>
+          <select id="pelatihan_ts_eng" name="ts_eng" class="w-full border p-2">
+            {% for e in engage_opts %}
+              <option value="{{ e }}">{{ e }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- field gabungan (read-only preview) -->
+      <div class="mb-3">
+        <label class="font-semibold">Target State (gabungan):</label>
+        <input type="text" id="pelatihan_target_state_preview" class="w-full border p-2 bg-gray-100" readonly>
+        <input type="hidden" name="target_state" id="pelatihan_target_state">
+      </div>
+
+      <div class="mb-4">
+        <label class="font-semibold">Kode Action:</label>
+        <input type="number" name="kode_action" id="pelatihan_kode_action" class="w-full border p-2" value="106" required>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Simpan</button>
+        <button type="button" onclick="closePelatihanModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
+      </div>
+    </form>
+
+    <button class="absolute top-2 right-3 text-gray-600" onclick="closePelatihanModal()">✖</button>
+  </div>
+</div>
+
+<!-- Modal Hapus -->
+<div id="pelatihanDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded shadow-md w-full max-w-sm relative">
+        <h3 class="text-lg font-bold mb-4">Konfirmasi Hapus</h3>
+        <p>Yakin ingin menghapus pelatihan ini?</p>
+        <div class="mt-4 flex justify-end gap-2">
+            <form method="POST" id="pelatihanDeleteForm" action="">
+                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Ya, Hapus</button>
+            </form>
+            <button onclick="closePelatihanDeleteModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
+        </div>
+        <button class="absolute top-2 right-3 text-gray-600" onclick="closePelatihanDeleteModal()">✖</button>
+    </div>
+</div>
+
+<script>
+  function buildPelatihanTargetState() {
+    return document.getElementById('pelatihan_ts_vark').value + " + " +
+           document.getElementById('pelatihan_ts_mlsq').value + " + " +
+           document.getElementById('pelatihan_ts_ams').value + " + " +
+           document.getElementById('pelatihan_ts_eng').value;
+  }
+  function refreshPelatihanPreview() {
+    document.getElementById('pelatihan_target_state_preview').value = buildPelatihanTargetState();
+  }
+  ['pelatihan_ts_vark','pelatihan_ts_mlsq','pelatihan_ts_ams','pelatihan_ts_eng'].forEach(id => {
+    document.getElementById(id).addEventListener('change', refreshPelatihanPreview);
+  });
+  function syncPelatihanTargetState() {
+    document.getElementById('pelatihan_target_state').value = buildPelatihanTargetState();
+  }
+
+  function openPelatihanModalAdd() {
+    document.getElementById('pelatihanModal').classList.remove('hidden');
+    document.getElementById('pelatihanModalTitle').innerText = "Tambah Pelatihan";
+    document.getElementById('pelatihan_id').value = "{{ next_id }}";
+    document.getElementById('pelatihan_id_display').value = "{{ next_id }}";
+    document.getElementById('pelatihan_judul').value = "";
+    document.getElementById('pelatihan_deskripsi').value = "";
+    document.getElementById('pelatihan_kategori').value = "Visual";
+    document.getElementById('pelatihan_skor_poin').value = 0;
+    document.getElementById('pelatihan_kode_action').value = 106;
+    refreshPelatihanPreview();
+  }
+
+  function editPelatihan(id, judul, deskripsi, kategori, skor_poin, target_state, kode_action) {
+    document.getElementById('pelatihanModal').classList.remove('hidden');
+    document.getElementById('pelatihanModalTitle').innerText = "Edit Pelatihan";
+    document.getElementById('pelatihan_id').value = id;
+    document.getElementById('pelatihan_id_display').value = id;
+    document.getElementById('pelatihan_judul').value = judul;
+    document.getElementById('pelatihan_deskripsi').value = deskripsi;
+    document.getElementById('pelatihan_kategori').value = kategori;
+    document.getElementById('pelatihan_skor_poin').value = skor_poin;
+    document.getElementById('pelatihan_kode_action').value = kode_action;
+
+    try {
+      const parts = target_state.split('+').map(s => s.trim());
+      if (parts.length === 4) {
+        document.getElementById('pelatihan_ts_vark').value = parts[0];
+        document.getElementById('pelatihan_ts_mlsq').value = parts[1];
+        document.getElementById('pelatihan_ts_ams').value  = parts[2];
+        document.getElementById('pelatihan_ts_eng').value  = parts[3];
+      }
+    } catch(e) {}
+    refreshPelatihanPreview();
+  }
+
+  function closePelatihanModal() {
+    document.getElementById('pelatihanModal').classList.add('hidden');
+  }
+
+  function openPelatihanDeleteModal(id) {
+    document.getElementById('pelatihanDeleteForm').action = `/admin/pelatihan/delete/${id}`;
+    document.getElementById('pelatihanDeleteModal').classList.remove('hidden');
+  }
+  function closePelatihanDeleteModal() {
+    document.getElementById('pelatihanDeleteModal').classList.add('hidden');
+  }
+</script>
+{% endblock %}

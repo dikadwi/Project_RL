@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Kuisioner Gaya Belajar{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white shadow rounded p-6">
+    <h2 class="text-2xl font-bold text-indigo-700 mb-4">🧠 Kuisioner Gaya Belajar</h2>
+    <p class="text-gray-600 mb-6">Masukkan skor Anda untuk setiap pernyataan di bawah ini (Skala 1–10)</p>
+
+    <form method="POST">
+        <input type="hidden" name="start_time" value="{{ start_time }}">
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="col-span-full text-lg font-semibold text-gray-700">🔹 VARK</div>
+            {% for key in vark_keys %}
+                <div>
+                    <label class="block text-sm text-gray-700 mb-1 capitalize">{{ key }}</label>
+                    <input type="number" name="{{ key }}" min="1" max="10" required
+                           class="w-full px-3 py-2 border rounded focus:ring focus:border-indigo-500">
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
+            <div class="col-span-full text-lg font-semibold text-gray-700">🔹 MLSQ</div>
+            {% for key in mlsq_keys %}
+                <div>
+                    <label class="block text-sm text-gray-700 mb-1 capitalize">{{ key.replace('-', ' ') }}</label>
+                    <input type="number" name="{{ key }}" min="1" max="10" required
+                           class="w-full px-3 py-2 border rounded focus:ring focus:border-indigo-500">
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
+            <div class="col-span-full text-lg font-semibold text-gray-700">🔹 AMS</div>
+            {% for key in ams_keys %}
+                <div>
+                    <label class="block text-sm text-gray-700 mb-1 capitalize">{{ key }}</label>
+                    <input type="number" name="{{ key }}" min="1" max="10" required
+                           class="w-full px-3 py-2 border rounded focus:ring focus:border-indigo-500">
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-8 text-center">
+            <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">
+                🚀 Submit Kuisioner & Lihat Rekomendasi
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

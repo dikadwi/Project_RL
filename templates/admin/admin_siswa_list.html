@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Kelola Siswa{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto bg-white p-6 shadow rounded">
+    <h2 class="text-2xl font-bold text-indigo-700 mb-4">📘 Daftar Siswa</h2>
+
+    <button onclick="openModal('modalTambah')" class="bg-indigo-600 text-white px-4 py-2 rounded mb-4">
+        + Tambah Siswa
+    </button>
+
+    <table class="w-full table-auto border">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="p-2">ID</th>
+                <th class="p-2">Nama</th>
+                <th class="p-2">Kelas</th>
+                <th class="p-2">Jenis Kelamin</th>
+                <th class="p-2">Email</th>
+                <th class="p-2">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in siswa_list %}
+            <tr class="border-t">
+                <td class="p-2">{{ s.siswa_id }}</td>
+                <td class="p-2">{{ s.nama_lengkap }}</td>
+                <td class="p-2">{{ s.kelas }}</td>
+                <td class="p-2">{{ s.jenis_kelamin }}</td>
+                <td class="p-2">{{ s.email }}</td>
+                <td class="p-2 space-x-2">
+                    <button onclick="openModal('modalEdit{{ s.siswa_id }}')" class="text-blue-600">Edit</button>
+                    <button onclick="openModal('modalHapus{{ s.siswa_id }}')" class="text-red-600">Hapus</button>
+                </td>
+            </tr>
+
+            <!-- Modal Edit -->
+            <div id="modalEdit{{ s.siswa_id }}" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                <div class="bg-white p-6 rounded shadow w-full max-w-md">
+                    <h3 class="text-xl font-semibold mb-4">Edit Siswa</h3>
+                    <form method="POST" action="{{ url_for('admin_siswa.edit', id=s.siswa_id) }}">
+                        <input name="nama_lengkap" value="{{ s.nama_lengkap }}" required class="w-full p-2 border mb-2" />
+                        <input name="kelas" value="{{ s.kelas }}" class="w-full p-2 border mb-2" />
+                        <select name="jenis_kelamin" class="w-full p-2 border mb-2">
+                            <option value="L" {% if s.jenis_kelamin == 'L' %}selected{% endif %}>Laki-laki</option>
+                            <option value="P" {% if s.jenis_kelamin == 'P' %}selected{% endif %}>Perempuan</option>
+                        </select>
+                        <input name="email" value="{{ s.email }}" class="w-full p-2 border mb-2" />
+                        <div class="flex justify-end space-x-2">
+                            <button type="button" onclick="closeModal('modalEdit{{ s.siswa_id }}')" class="bg-gray-300 px-4 py-2 rounded">Batal</button>
+                            <button class="bg-blue-600 text-white px-4 py-2 rounded">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal Hapus -->
+            <div id="modalHapus{{ s.siswa_id }}" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                <div class="bg-white p-6 rounded shadow w-full max-w-md">
+                    <h3 class="text-xl font-semibold mb-4">Yakin hapus siswa ini?</h3>
+                    <p class="mb-4 text-sm text-gray-600">{{ s.nama_lengkap }} ({{ s.email }})</p>
+                    <div class="flex justify-end space-x-2">
+                        <button onclick="closeModal('modalHapus{{ s.siswa_id }}')" class="bg-gray-300 px-4 py-2 rounded">Batal</button>
+                        <a href="{{ url_for('admin_siswa.hapus', id=s.siswa_id) }}" class="bg-red-600 text-white px-4 py-2 rounded">Hapus</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Tambah -->
+<div id="modalTambah" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div class="bg-white p-6 rounded shadow w-full max-w-md">
+        <h3 class="text-xl font-semibold mb-4">Tambah Siswa</h3>
+        <form method="POST" action="{{ url_for('admin_siswa.tambah') }}">
+            <input name="nama_lengkap" placeholder="Nama Lengkap" required class="w-full p-2 border mb-2" />
+            <input name="kelas" placeholder="Kelas" class="w-full p-2 border mb-2" />
+            <select name="jenis_kelamin" class="w-full p-2 border mb-2">
+                <option value="L">Laki-laki</option>
+                <option value="P">Perempuan</option>
+            </select>
+            <input name="email" placeholder="Email" class="w-full p-2 border mb-2" />
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeModal('modalTambah')" class="bg-gray-300 px-4 py-2 rounded">Batal</button>
+                <button class="bg-indigo-600 text-white px-4 py-2 rounded">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+</script>
+{% endblock %}

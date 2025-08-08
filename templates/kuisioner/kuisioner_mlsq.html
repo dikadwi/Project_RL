@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Kuisioner MLSQ{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6 bg-white rounded shadow">
+    <h2 class="text-xl font-bold text-indigo-700 mb-4">🎯 Kuisioner Motivated Learning Strategies Questionnaire (MLSQ)</h2>
+    <form method="POST" action="{{ url_for('kuisioner_mlsq.submit') }}">
+        {% for q in questions %}
+        <div class="mb-4">
+            <p class="font-semibold">{{ loop.index }}. {{ q.pertanyaan }}</p>
+            <div class="ml-4 space-y-1">
+                <label><input type="radio" name="jawaban_{{ q.id }}" value="1" required> Sangat Tidak Setuju (1)</label><br>
+                <label><input type="radio" name="jawaban_{{ q.id }}" value="2"> Tidak Setuju (2)</label><br>
+                <label><input type="radio" name="jawaban_{{ q.id }}" value="3"> Agak Tidak Setuju (3)</label><br>
+                <label><input type="radio" name="jawaban_{{ q.id }}" value="4"> Netral (4)</label><br>
+                <label><input type="radio" name="jawaban_{{ q.id }}" value="5"> Agak Setuju (5)</label><br>
+                <label><input type="radio" name="jawaban_{{ q.id }}" value="6"> Setuju (6)</label><br>
+                <label><input type="radio" name="jawaban_{{ q.id }}" value="7"> Sangat Setuju (7)</label>
+            </div>
+        </div>
+        {% endfor %}
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">Kirim Jawaban</button>
+    </form>
+</div>
+{% endblock %}

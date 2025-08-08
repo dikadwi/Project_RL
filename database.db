@@ -1,0 +1,55 @@
+🔒 users
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+username TEXT,
+password TEXT (hashed),
+role TEXT CHECK(role IN ('admin', 'user')),
+created_at DATETIME,
+last_login DATETIME
+
+🎯 kuisioner
+sql
+Copy
+Edit
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+user_id INTEGER,
+vark_scores TEXT,
+mlsq_scores TEXT,
+ams_scores TEXT,
+submitted_at DATETIME,
+duration_seconds INTEGER
+
+🧾 misi
+sql
+Copy
+Edit
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+nama TEXT,
+vark TEXT,
+mlsq TEXT,
+ams TEXT,
+poin INTEGER,
+durasi TEXT,
+jenis TEXT
+
+🎁 reward
+sql
+Copy
+Edit
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+nama TEXT,
+kategori TEXT,
+vark_bonus TEXT,
+ams_target TEXT,
+poin_dibutuhkan INTEGER
+
+⏱️ activity_log
+sql
+Copy
+Edit
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+user_id INTEGER,
+type TEXT CHECK(type IN ('login', 'kuisioner', 'misi')),
+description TEXT,
+start_time DATETIME,
+end_time DATETIME,
+duration_seconds INTEGER

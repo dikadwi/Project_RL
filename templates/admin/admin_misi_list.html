@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% block title %}Kelola Misi{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto bg-white p-6 shadow rounded">
+    <h2 class="text-2xl font-bold text-indigo-700 mb-4">📘 Daftar Misi</h2>
+
+    <!-- Upload CSV -->
+    <form action="{{ url_for('admin_misi.upload_csv_misi') }}" method="POST" enctype="multipart/form-data" class="mb-4">
+        <input type="file" name="file" accept=".csv" required>
+        <button type="submit" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
+            📤 Upload CSV
+        </button>
+    </form>
+
+    <!-- Tombol Tambah -->
+    <button onclick="openModalAdd()" class="mb-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+    ➕ Tambah Misi
+    </button>
+
+    <!-- Tabel Data -->
+    <table class="w-full table-auto border">
+        <thead>
+            <tr class="bg-gray-100 text-left">
+                <th class="p-2">ID</th>
+                <th class="p-2">Judul</th>
+                <th class="p-2">Deskripsi</th>
+                <th class="p-2">Kategori</th>
+                <th class="p-2">Skor Poin</th>
+                <th class="p-2">Target State</th>
+                <th class="p-2">Kode Action</th>
+                <th class="p-2">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in misi %}
+            <tr class="border-t">
+                <td class="p-2">{{ m.id }}</td>
+                <td class="p-2">{{ m.judul }}</td>
+                <td class="p-2">{{ m.deskripsi }}</td>
+                <td class="p-2">{{ m.kategori }}</td>
+                <td class="p-2">{{ m.skor_poin }}</td>
+                <td class="p-2">{{ m.target_state }}</td>
+                <td class="p-2">{{ m.kode_action }}</td>
+                <td class="p-2 space-x-2">
+                    <button onclick="editMisi('{{ m.id }}', '{{ m.judul }}', '{{ m.deskripsi }}', '{{ m.kategori }}', {{ m.skor_poin }}, '{{ m.target_state }}', {{ m.kode_action }})"
+                        class="text-blue-600 hover:underline">Edit</button>
+                    <button onclick="openDeleteModal('{{ m.id }}')"
+                        class="text-red-600 hover:underline">Hapus</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Tambah/Edit -->
+<div id="misiModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+  <!-- card modal: flex-col, tinggi max, overflow hidden -->
+  <div class="bg-white rounded shadow-md w-[90%] max-w-3xl max-h-[90vh] relative flex flex-col overflow-hidden">
+    
+    <!-- HEADER sticky -->
+    <div class="sticky top-0 bg-white z-10 border-b px-6 py-4 flex items-center justify-between">
+      <h3 id="modalTitle" class="text-xl font-semibold">Tambah Misi</h3>
+      <button class="text-gray-600 hover:text-gray-800" onclick="closeModal()">✖</button>
+    </div>
+
+    <!-- BODY scrollable -->
+    <div class="px-6 py-4 overflow-y-auto">
+      <form method="POST" action="{{ url_for('admin_misi.save_misi') }}" onsubmit="syncTargetState()">
+        <!-- ID otomatis -->
+        <div class="mb-2">
+          <label class="font-semibold">ID (otomatis):</label>
+          <input type="text" id="id_display" class="w-full border p-2 bg-gray-100" value="{{ next_id }}" disabled>
+          <input type="hidden" name="id" id="misiId" value="{{ next_id }}">
+        </div>
+
+        <div class="mb-2">
+          <label class="font-semibold">Judul:</label>
+          <input type="text" name="judul" id="judul" class="w-full border p-2" required>
+        </div>
+
+        <div class="mb-2">
+          <label class="font-semibold">Deskripsi:</label>
+          <textarea name="deskripsi" id="deskripsi" class="w-full border p-2" required></textarea>
+        </div>
+
+        <!-- Kategori dropdown -->
+        <div class="mb-2">
+          <label class="font-semibold">Kategori:</label>
+          <select name="kategori" id="kategori" class="w-full border p-2" required>
+            <option value="Visual">Visual</option>
+            <option value="Auditory">Auditory</option>
+            <option value="Reading">Reading</option>
+            <option value="Kinesthetic">Kinesthetic</option>
+          </select>
+        </div>
+
+        <div class="mb-2">
+          <label class="font-semibold">Skor Poin:</label>
+          <input type="number" name="skor_poin" id="skor_poin" class="w-full border p-2" required min="0">
+        </div>
+
+        <!-- Target State = 4 dropdown -->
+        <div class="grid grid-cols-2 gap-3 mb-1">
+          <div>
+            <label class="font-semibold">VARK:</label>
+            <select id="ts_vark" name="ts_vark" class="w-full border p-2">
+              {% for v in vark_opts %}<option value="{{ v }}">{{ v }}</option>{% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="font-semibold">MLSQ Level:</label>
+            <select id="ts_mlsq" name="ts_mlsq" class="w-full border p-2">
+              {% for m in mlsq_opts %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="font-semibold">AMS:</label>
+            <select id="ts_ams" name="ts_ams" class="w-full border p-2">
+              {% for a in ams_opts %}<option value="{{ a }}">{{ a }}</option>{% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="font-semibold">Engagement:</label>
+            <select id="ts_eng" name="ts_eng" class="w-full border p-2">
+              {% for e in engage_opts %}<option value="{{ e }}">{{ e }}</option>{% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- field gabungan (read-only preview) -->
+        <div class="mb-3">
+          <label class="font-semibold">Target State (gabungan):</label>
+          <input type="text" id="target_state_preview" class="w-full border p-2 bg-gray-100" readonly
+                 placeholder="Contoh: K + low + intrinsic + m1_f1_a1">
+          <input type="hidden" name="target_state" id="target_state">
+        </div>
+
+        <!-- FOOTER (boleh ikut scroll; kalau mau sticky juga, bungkus di div sticky bottom-0) -->
+        <div class="mb-4">
+          <label class="font-semibold">Kode Action:</label>
+          <input type="number" name="kode_action" id="kode_action" class="w-full border p-2 bg-gray-100" value="105" readonly required>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Simpan</button>
+          <button type="button" onclick="closeModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal Hapus -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded shadow-md w-full max-w-sm relative">
+        <h3 class="text-lg font-bold mb-4">Konfirmasi Hapus</h3>
+        <p>Yakin ingin menghapus misi ini?</p>
+        <div class="mt-4 flex justify-end gap-2">
+            <form method="POST" id="deleteForm" action="">
+                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Ya, Hapus</button>
+            </form>
+            <button onclick="closeDeleteModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
+        </div>
+        <button class="absolute top-2 right-3 text-gray-600" onclick="closeDeleteModal()">✖</button>
+    </div>
+</div>
+
+<script>
+  // rangkai target_state dari 4 dropdown
+  function buildTargetState() {
+    const v = document.getElementById('ts_vark').value;
+    const m = document.getElementById('ts_mlsq').value;
+    const a = document.getElementById('ts_ams').value;
+    const e = document.getElementById('ts_eng').value;
+    return `${v} + ${m} + ${a} + ${e}`;
+  }
+  function refreshPreview() {
+    document.getElementById('target_state_preview').value = buildTargetState();
+  }
+  ['ts_vark','ts_mlsq','ts_ams','ts_eng'].forEach(id => {
+    document.getElementById(id).addEventListener('change', refreshPreview);
+  });
+  function syncTargetState() {
+    document.getElementById('target_state').value = buildTargetState();
+  }
+
+  function openModalAdd() {
+    document.getElementById('misiModal').classList.remove('hidden');
+    document.getElementById('modalTitle').innerText = "Tambah Misi";
+    // set nilai default
+    document.getElementById('misiId').value = "{{ next_id }}";
+    document.getElementById('id_display').value = "{{ next_id }}";
+    document.getElementById('judul').value = "";
+    document.getElementById('deskripsi').value = "";
+    document.getElementById('kategori').value = "Visual";
+    document.getElementById('skor_poin').value = "";
+    document.getElementById('ts_vark').value = "V";
+    document.getElementById('ts_mlsq').value = "low";
+    document.getElementById('ts_ams').value  = "intrinsic";
+    document.getElementById('ts_eng').value  = "m1_f1_a1";
+    document.getElementById('kode_action').value = 105;
+    refreshPreview();
+  }
+
+  function editMisi(id, judul, deskripsi, kategori, skor_poin, target_state, kode_action) {
+    document.getElementById('misiModal').classList.remove('hidden');
+    document.getElementById('modalTitle').innerText = "Edit Misi";
+    document.getElementById('misiId').value = id;
+    document.getElementById('id_display').value = id;
+    document.getElementById('judul').value = judul;
+    document.getElementById('deskripsi').value = deskripsi;
+    document.getElementById('kategori').value = kategori;
+    document.getElementById('skor_poin').value = skor_poin;
+    document.getElementById('kode_action').value = kode_action;
+
+    // coba pecah target_state untuk isi dropdown bila format sesuai
+    try {
+      const parts = target_state.split('+').map(s => s.trim());
+      if (parts.length === 4) {
+        document.getElementById('ts_vark').value = parts[0];
+        document.getElementById('ts_mlsq').value = parts[1];
+        document.getElementById('ts_ams').value  = parts[2];
+        document.getElementById('ts_eng').value  = parts[3];
+      }
+    } catch(e) {}
+    refreshPreview();
+  }
+
+  function closeModal() {
+    document.getElementById('misiModal').classList.add('hidden');
+  }
+
+  function openDeleteModal(id) {
+    // set action form delete
+    document.getElementById('deleteForm').action = `/admin/misi/delete/${id}`;
+    // tampilkan modal hapus
+    document.getElementById('deleteModal').classList.remove('hidden');
+  }
+
+  function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+  }
+
+</script>
+{% endblock %}

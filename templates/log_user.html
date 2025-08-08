@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Riwayat Aktivitas{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white p-6 shadow rounded">
+    <h2 class="text-2xl font-bold text-indigo-700 mb-4">⏱️ Riwayat Aktivitas Anda</h2>
+    <table class="w-full table-auto border">
+        <thead>
+            <tr class="bg-gray-100 text-left">
+                <th class="p-2">Waktu</th>
+                <th class="p-2">Tipe</th>
+                <th class="p-2">Deskripsi</th>
+                <th class="p-2">Durasi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr class="border-t">
+                <td class="p-2">{{ log.start_time.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+                <td class="p-2">{{ log.type }}</td>
+                <td class="p-2">{{ log.description }}</td>
+                <td class="p-2">{{ log.duration_seconds }} detik</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

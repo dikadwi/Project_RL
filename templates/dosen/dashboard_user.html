@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Dosen{% endblock %}
+
+{% block content %}
+<h2 class="text-2xl font-bold text-indigo-700 mb-4">Dashboard Dosen</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">🎯 Kuisioner Gaya Belajar</h3>
+        <a href="/rl/kuisioner" class="text-indigo-600 hover:underline">Lihat Kuisioner</a>
+    </div>
+
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">🧾 Lihat Misi & Rekomendasi</h3>
+        <a href="/rl/misi" class="text-indigo-600 hover:underline">Lihat Rekomendasi</a>
+    </div>
+
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">⏱️ Log  Aktivitas</h3>
+        <a href="/user/aktivitas" class="text-indigo-600 hover:underline">Lihat Log</a>
+    </div>
+</div>
+{% endblock %}

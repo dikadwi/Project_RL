@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Kelola Kuisioner MLSQ{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto bg-white p-6 shadow rounded">
+    <h2 class="text-2xl font-bold text-indigo-700 mb-4">📋 Daftar Kuisioner MLSQ</h2>
+
+    <button onclick="openModal()" class="mb-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+        ➕ Tambah Pertanyaan
+    </button>
+
+    <table class="w-full table-auto border">
+        <thead>
+            <tr class="bg-gray-100 text-left">
+                <th class="p-2">No</th>
+                <th class="p-2">Pertanyaan</th>
+                <th class="p-2">Opsi A</th>
+                <th class="p-2">Opsi B</th>
+                <th class="p-2">Opsi C</th>
+                <th class="p-2">Opsi D</th>
+                <th class="p-2">Kategori</th>
+                <th class="p-2">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for q in kuisioner %}
+            <tr class="border-t" id="row-{{ q.id }}">
+                <td class="p-2">{{ loop.index }}</td>
+                <td class="p-2">{{ q.pertanyaan }}</td>
+                <td class="p-2">{{ q.opsi_a }}</td>
+                <td class="p-2">{{ q.opsi_b }}</td>
+                <td class="p-2">{{ q.opsi_c }}</td>
+                <td class="p-2">{{ q.opsi_d }}</td>
+                <td class="p-2">{{ q.kategori }}</td>
+                <td class="p-2 space-x-2">
+                    <button onclick="editPertanyaan({{ q.id }}, `{{ q.pertanyaan|escape }}`, 
+                            `{{ q.opsi_a|escape }}`, `{{ q.opsi_b|escape }}`,
+                            `{{ q.opsi_c|escape }}`, `{{ q.opsi_d|escape }}`,
+                            `{{ q.kategori|escape }}`)"
+                            class="text-blue-600 hover:underline">Edit</button>
+                    <button onclick="openDeleteModal({{ q.id }})"
+                        class="text-red-600 hover:underline">Hapus</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Tambah/Edit -->
+<div id="mlsqModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded shadow-md w-full max-w-2xl relative">
+        <h3 id="modalTitle" class="text-xl font-semibold mb-4">Tambah Pertanyaan MLSQ</h3>
+        <form method="POST" action="{{ url_for('admin_q_mlsq.add_or_edit') }}">
+            <input type="hidden" name="id" id="pertanyaanId">
+            <div class="mb-3">
+                <label>Pertanyaan:</label>
+                <textarea name="pertanyaan" id="pertanyaan" class="w-full border p-2" required></textarea>
+            </div>
+            {% for opsi in ['a', 'b', 'c', 'd'] %}
+            <div class="mb-2">
+                <label>Opsi {{ opsi|upper }}:</label>
+                <input type="text" name="opsi_{{ opsi }}" id="opsi_{{ opsi }}" class="w-full border p-2" required>
+            </div>
+            {% endfor %}
+            <div class="mb-2">
+                <label>Kategori:</label>
+                <select name="kategori" id="kategori" class="w-full border p-2" required>
+                    <option value="self_regulation">Self-Regulation</option>
+                    <option value="task_value">Task Value</option>
+                    <option value="control_belief">Control Belief</option>
+                    <option value="goal_orientation">Goal Orientation</option>
+                    <option value="self_efficacy">Self Efficacy</option>
+                </select>
+            </div>
+            <div class="flex justify-end gap-2 mt-4">
+                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Simpan</button>
+                <button type="button" onclick="closeModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
+            </div>
+        </form>
+        <button class="absolute top-2 right-3 text-gray-600" onclick="closeModal()">✖</button>
+    </div>
+</div>
+
+<!-- Modal Hapus -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded shadow-md w-full max-w-sm relative">
+        <h3 class="text-lg font-bold mb-4">Konfirmasi Hapus</h3>
+        <p>Yakin ingin menghapus pertanyaan ini?</p>
+        <div class="mt-4 flex justify-end gap-2">
+            <form method="POST" id="deleteForm" action="">
+                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Ya, Hapus</button>
+            </form>
+            <button onclick="closeDeleteModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
+        </div>
+        <button class="absolute top-2 right-3 text-gray-600" onclick="closeDeleteModal()">✖</button>
+    </div>
+</div>
+
+<script>
+    function openModal() {
+        document.getElementById('mlsqModal').classList.remove('hidden');
+        document.getElementById('modalTitle').innerText = "Tambah Pertanyaan";
+        document.getElementById('pertanyaanId').value = "";
+        document.getElementById('pertanyaan').value = "";
+        ['a','b','c','d'].forEach(o => document.getElementById('opsi_' + o).value = "");
+        document.getElementById('kategori').value = "self-regulation";
+    }
+
+    function editPertanyaan(id, pertanyaan, a, b, c, d, kategori) {
+        document.getElementById('mlsqModal').classList.remove('hidden');
+        document.getElementById('modalTitle').innerText = "Edit Pertanyaan";
+        document.getElementById('pertanyaanId').value = id;
+        document.getElementById('pertanyaan').value = pertanyaan;
+        document.getElementById('opsi_a').value = a;
+        document.getElementById('opsi_b').value = b;
+        document.getElementById('opsi_c').value = c;
+        document.getElementById('opsi_d').value = d;
+        document.getElementById('kategori').value = kategori;
+    }
+
+    function closeModal() {
+        document.getElementById('mlsqModal').classList.add('hidden');
+    }
+
+    function openDeleteModal(id) {
+        document.getElementById('deleteForm').action = `/admin/q_mlsq/delete/${id}`;
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+</script>
+{% endblock %}

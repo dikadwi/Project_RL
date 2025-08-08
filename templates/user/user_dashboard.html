@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Dashboard User{% endblock %}
+
+{% block content %}
+<h2 class="text-2xl font-bold text-indigo-700 mb-4">Dashboard User</h2>
+
+<!-- Section: Skor -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <!-- Skor VARK -->
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">📊 Skor Gaya Belajar (VARK)</h3>
+        {% if vark_score %}
+        <ul class="text-gray-700 text-sm space-y-1">
+            <li><span class="mr-2">👁️</span><strong>Visual:</strong> {{ vark_score.visual }}</li>
+            <li><span class="mr-2">👂</span><strong>Auditory:</strong> {{ vark_score.auditory }}</li>
+            <li><span class="mr-2">📖</span><strong>Reading:</strong> {{ vark_score.reading }}</li>
+            <li><span class="mr-2">🏃</span><strong>Kinesthetic:</strong> {{ vark_score.kinesthetic }}</li>
+        </ul>
+        {% else %}
+        <p class="text-sm text-gray-500">Belum mengisi kuisioner VARK.</p>
+        {% endif %}
+    </div>
+
+    <!-- Skor MLSQ -->
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">📚 Skor Strategi Belajar (MLSQ)</h3>
+        {% if mlsq_score %}
+        <ul class="text-gray-700 text-sm space-y-1">
+            <li><span class="mr-2">🧠</span><strong>Self Regulation:</strong> {{ mlsq_score.self_regulation }}</li>
+            <li><span class="mr-2">🎯</span><strong>Task Value:</strong> {{ mlsq_score.task_value }}</li>
+            <li><span class="mr-2">🎛️</span><strong>Control Belief:</strong> {{ mlsq_score.control_belief }}</li>
+            <li><span class="mr-2">🥅</span><strong>Goal Orientation:</strong> {{ mlsq_score.goal_orientation }}</li>
+            <li><span class="mr-2">💪</span><strong>Self Efficacy:</strong> {{ mlsq_score.self_efficacy }}</li>
+        </ul>
+        {% else %}
+        <p class="text-sm text-gray-500">Belum mengisi kuisioner MLSQ.</p>
+        {% endif %}
+    </div>
+
+    <!-- Skor AMS -->
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">🎓 Skor Motivasi Akademik (AMS)</h3>
+        {% if ams_score %}
+        <ul class="text-gray-700 text-sm space-y-1">
+            <li><span class="mr-2">💡</span><strong>Intrinsic Motivation:</strong> {{ ams_score.intrinsic }}</li>
+            <li><span class="mr-2">💰</span><strong>Extrinsic Motivation:</strong> {{ ams_score.extrinsic }}</li>
+            <li><span class="mr-2">😴</span><strong>Amotivation:</strong> {{ ams_score.amotivation }}</li>
+        </ul>
+        {% else %}
+        <p class="text-sm text-gray-500">Belum mengisi kuisioner AMS.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">🎯 Kuisioner Gaya Belajar (VARK)</h3>
+        <!-- <a href="/rl/kuisioner" class="text-indigo-600 hover:underline">Isi Sekarang</a> -->
+        <a href="/kuisioner/vark" class="text-indigo-600 hover:underline">Kerjakan Sekarang</a>
+    </div>
+    
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">🎯 Kuisioner LMSQ</h3>
+        <!-- <a href="/rl/kuisioner" class="text-indigo-600 hover:underline">Kerjakan Sekarang</a> -->
+        <a href="/kuisioner/mlsq" class="text-indigo-600 hover:underline">Kerjakan Sekarang</a>
+    </div>
+
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">🎯 Kuisioner AMS</h3>
+        <!-- <a href="/rl/kuisioner" class="text-indigo-600 hover:underline">Kerjakan Sekarang</a> -->
+        <a href="/kuisioner/ams" class="text-indigo-600 hover:underline">Kerjakan Sekarang</a>
+    </div>
+
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">🧾 Lihat Rekomendasi</h3>
+        <a href="/rl/rekomendasi" class="text-indigo-600 hover:underline">Lihat Rekomendasi</a>
+    </div>
+
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">⏱️ Riwayat Aktivitas</h3>
+        <a href="#/user/aktivitas" class="text-indigo-600 hover:underline">Lihat Log</a>
+    </div>
+</div>
+{% endblock %}

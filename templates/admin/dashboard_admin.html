@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Admin{% endblock %}
+
+{% block content %}
+<h2 class="text-2xl font-bold text-indigo-700 mb-4">Dashboard Admin</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">📘 Kelola Misi</h3>
+        <a href="/admin/misi" class="text-indigo-600 hover:underline">Lihat & Edit</a>
+    </div>
+
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">🎁 Kelola Reward</h3>
+        <a href="/admin/reward" class="text-indigo-600 hover:underline">Lihat & Edit</a>
+    </div>
+
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">📦 Kelola Produk</h3>
+        <a href="/admin/produk" class="text-indigo-600 hover:underline">Lihat & Edit</a>
+    </div>
+
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">⚠️ Kelola Hukuman</h3>
+        <a href="/admin/hukuman" class="text-indigo-600 hover:underline">Lihat & Edit</a>
+    </div>
+
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">🎓 Kelola Pelatihan</h3>
+        <a href="/admin/pelatihan" class="text-indigo-600 hover:underline">Lihat & Edit</a>
+    </div>
+
+     <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">📚 Kelola Siswa</h3>
+        <a href="/admin/siswa" class="text-indigo-600 hover:underline">Lihat & Edit</a>
+    </div>
+
+     <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">📚 Kelola Kuisioner VARK</h3>
+        <a href="/admin/q_vark" class="text-indigo-600 hover:underline">Lihat & Edit</a>
+    </div>
+
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">📚 Kelola Kuisioner MLSQ</h3>
+        <a href="/admin/q_mlsq" class="text-indigo-600 hover:underline">Lihat & Edit</a>
+    </div>
+
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">📚 Kelola Kuisioner AMS</h3>
+        <a href="/admin/q_ams" class="text-indigo-600 hover:underline">Lihat & Edit</a>
+    </div>
+
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">📊 Data Rekomendasi</h3>
+        <a href="/admin/rekomendasi" class="text-indigo-600 hover:underline">Lihat Hasil</a>
+    </div>
+
+    <div class="p-4 bg-white shadow rounded">
+        <h3 class="text-lg font-semibold mb-2">⏱️ Aktivitas Semua User</h3>
+        <a href="/admin/logs" class="text-indigo-600 hover:underline">Lihat Log</a>
+    </div>
+</div>
+{% endblock %}

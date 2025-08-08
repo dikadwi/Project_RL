@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Kelola Kuisioner VARK{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto bg-white p-6 shadow rounded">
+    <h2 class="text-2xl font-bold text-indigo-700 mb-4">🧠 Daftar Kuisioner VARK</h2>
+
+    <button onclick="openModal()" class="mb-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+        ➕ Tambah Pertanyaan
+    </button>
+
+    <table class="w-full table-auto border" id="varkTable">
+        <thead>
+            <tr class="bg-gray-100 text-left">
+                <th class="p-2">No</th>
+                <th class="p-2">Pertanyaan</th>
+                <th class="p-2">Opsi A</th>
+                <th class="p-2">Opsi B</th>
+                <th class="p-2">Opsi C</th>
+                <th class="p-2">Opsi D</th>
+                <th class="p-2">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for q in kuisioner %}
+            <tr class="border-t" id="row-{{ q.id }}">
+                <td class="p-2">{{ loop.index }}</td>
+                <td class="p-2">{{ q.pertanyaan }}</td>
+                <td class="p-2">{{ q.opsi_a }} ({{ q.tipe_a }})</td>
+                <td class="p-2">{{ q.opsi_b }} ({{ q.tipe_b }})</td>
+                <td class="p-2">{{ q.opsi_c }} ({{ q.tipe_c }})</td>
+                <td class="p-2">{{ q.opsi_d }} ({{ q.tipe_d }})</td>
+                <td class="p-2 space-x-2">
+                    <button onclick="editPertanyaan({{ q.id }}, `{{ q.pertanyaan|escape }}`, 
+                            `{{ q.opsi_a|escape }}`, `{{ q.tipe_a }}`,
+                            `{{ q.opsi_b|escape }}`, `{{ q.tipe_b }}`,
+                            `{{ q.opsi_c|escape }}`, `{{ q.tipe_c }}`,
+                            `{{ q.opsi_d|escape }}`, `{{ q.tipe_d }}`)"
+                            class="text-blue-600 hover:underline">Edit</button>
+                   <button onclick="openDeleteModal({{ q.id }})"
+                        class="text-red-600 hover:underline">Hapus</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Tambah/Edit -->
+<div id="qvarkModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded shadow-md w-full max-w-2xl relative">
+        <h3 id="modalTitle" class="text-xl font-semibold mb-4">Tambah Pertanyaan VARK</h3>
+        <form method="POST" action="{{ url_for('admin_q_vark.add_or_edit') }}">
+            <input type="hidden" name="id" id="pertanyaanId">
+            <div class="mb-3">
+                <label>Pertanyaan:</label>
+                <textarea name="pertanyaan" id="pertanyaan" class="w-full border p-2" required></textarea>
+            </div>
+            {% for opsi in ['a', 'b', 'c', 'd'] %}
+            <div class="mb-2">
+                <label>Opsi {{ opsi|upper }}:</label>
+                <input type="text" name="opsi_{{ opsi }}" id="opsi_{{ opsi }}" class="w-full border p-2" required>
+                <label class="mt-1">Tipe {{ opsi|upper }}:</label>
+                <select name="tipe_{{ opsi }}" id="tipe_{{ opsi }}" class="w-full border p-2" required>
+                    <option value="Visual">Visual</option>
+                    <option value="Auditory">Auditory</option>
+                    <option value="Reading">Reading</option>
+                    <option value="Kinesthetic">Kinesthetic</option>
+                </select>
+            </div>
+            {% endfor %}
+            <div class="flex justify-end gap-2 mt-4">
+                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Simpan</button>
+                <button type="button" onclick="closeModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
+            </div>
+        </form>
+        <button class="absolute top-2 right-3 text-gray-600" onclick="closeModal()">✖</button>
+    </div>
+</div>
+
+<!-- Modal Hapus -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded shadow-md w-full max-w-sm relative">
+        <h3 class="text-lg font-bold mb-4">Konfirmasi Hapus</h3>
+        <p>Yakin ingin menghapus pertanyaan ini?</p>
+        <div class="mt-4 flex justify-end gap-2">
+            <form method="POST" id="deleteForm" action="">
+                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Ya, Hapus</button>
+            </form>
+            <button onclick="closeDeleteModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Batal</button>
+        </div>
+        <button class="absolute top-2 right-3 text-gray-600" onclick="closeDeleteModal()">✖</button>
+    </div>
+</div>
+
+
+<script>
+    function openModal() {
+        document.getElementById('qvarkModal').classList.remove('hidden');
+        document.getElementById('modalTitle').innerText = "Tambah Pertanyaan";
+        document.getElementById('pertanyaanId').value = "";
+        document.getElementById('pertanyaan').value = "";
+        ['a','b','c','d'].forEach(function(o) {
+            document.getElementById('opsi_' + o).value = "";
+            document.getElementById('tipe_' + o).value = "Visual";
+        });
+    }
+
+    function editPertanyaan(id, pertanyaan, oa, ta, ob, tb, oc, tc, od, td) {
+        document.getElementById('qvarkModal').classList.remove('hidden');
+        document.getElementById('modalTitle').innerText = "Edit Pertanyaan";
+        document.getElementById('pertanyaanId').value = id;
+        document.getElementById('pertanyaan').value = pertanyaan;
+        document.getElementById('opsi_a').value = oa;
+        document.getElementById('tipe_a').value = ta;
+        document.getElementById('opsi_b').value = ob;
+        document.getElementById('tipe_b').value = tb;
+        document.getElementById('opsi_c').value = oc;
+        document.getElementById('tipe_c').value = tc;
+        document.getElementById('opsi_d').value = od;
+        document.getElementById('tipe_d').value = td;
+    }
+
+    function closeModal() {
+        document.getElementById('qvarkModal').classList.add('hidden');
+    }
+
+    function openDeleteModal(id) {
+        const form = document.getElementById('deleteForm');
+        form.action = `/admin/q_vark/delete/${id}`; // Sesuaikan route jika berbeda
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+</script>
+
+
+{% endblock %}
