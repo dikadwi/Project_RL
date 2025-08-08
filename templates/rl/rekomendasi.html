@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Rekomendasi Misi & Reward{% endblock %}
+{% block title %}Rekomendasi{% endblock %}
 
 {% block content %}
 <div class="max-w-5xl mx-auto p-6 bg-white rounded-lg shadow-md space-y-8">
-    <h2 class="text-2xl font-bold text-indigo-700">🎯 Rekomendasi Misi & Reward Berdasarkan Skor Anda</h2>
+    <h2 class="text-2xl font-bold text-indigo-700">🎯 Rekomendasi Berdasarkan Skor Anda</h2>
 
     <!-- Skor State -->
     <section>
@@ -69,28 +69,61 @@
     </div>
 </section>
 
-<!-- Rekomendasi Misi dan Reward -->
+<!-- Rekomendasi dinamis berdasarkan action -->
+{% if rekomendasi.misi %}
 <section class="mt-8">
     <h3 class="text-lg font-semibold text-gray-700 mb-2">🎓 Rekomendasi Misi</h3>
     <ul class="list-disc ml-6 text-sm space-y-1">
-        {% for m in rekom_misi %}
-        <li>
-            <span class="font-semibold">{{ m.nama }}</span> — <span class="text-gray-500">{{ m.jenis }}, {{ m.durasi }} menit, {{ m.poin }} poin</span>
-        </li>
+        {% for m in rekomendasi.misi %}
+        <li><span class="font-semibold">{{ m.judul }}</span> — <span class="text-gray-500">{{ m.deskripsi }}</span> ({{ m.skor_poin }} poin)</li>
         {% endfor %}
     </ul>
 </section>
+{% endif %}
 
+{% if rekomendasi.reward %}
 <section class="mt-8">
     <h3 class="text-lg font-semibold text-gray-700 mb-2">🎁 Rekomendasi Reward</h3>
     <ul class="list-disc ml-6 text-sm space-y-1">
-        {% for r in rekom_reward %}
-        <li>
-            <span class="font-semibold">{{ r.nama_reward }}</span> — <span class="text-gray-500">{{ r.kategori }}</span> ({{ r.poin_dibutuhkan }} poin)
-        </li>
+        {% for r in rekomendasi.reward %}
+        <li><span class="font-semibold">{{ r.judul }}</span> — <span class="text-gray-500">{{ r.deskripsi }}</span> ({{ r.skor_poin }} poin)</li>
         {% endfor %}
     </ul>
 </section>
+{% endif %}
+
+{% if rekomendasi.produk %}
+<section class="mt-8">
+    <h3 class="text-lg font-semibold text-gray-700 mb-2">🛒 Rekomendasi Pembelian</h3>
+    <ul class="list-disc ml-6 text-sm space-y-1">
+        {% for p in rekomendasi.produk %}
+        <li><span class="font-semibold">{{ p.judul }}</span> — <span class="text-gray-500">{{ p.deskripsi }}</span> ({{ p.poin }} poin)</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if rekomendasi.hukuman %}
+<section class="mt-8">
+    <h3 class="text-lg font-semibold text-gray-700 mb-2">⚠️ Rekomendasi Hukuman</h3>
+    <ul class="list-disc ml-6 text-sm space-y-1">
+        {% for h in rekomendasi.hukuman %}
+        <li><span class="font-semibold">{{ h.judul }}</span> — <span class="text-gray-500">{{ h.deskripsi }}</span> ({{ h.skor_poin }} poin)</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if rekomendasi.pelatihan %}
+<section class="mt-8">
+    <h3 class="text-lg font-semibold text-gray-700 mb-2">📚 Rekomendasi Konsultasi</h3>
+    <ul class="list-disc ml-6 text-sm space-y-1">
+        {% for k in rekomendasi.pelatihan %}
+        <li><span class="font-semibold">{{ k.judul }}</span> — <span class="text-gray-500">{{ k.deskripsi }}</span> ({{ k.skor_poin }} poin)</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
 
     <div class="text-right pt-4">
         <a href="{{ url_for('user_dashboard.index') }}" class="text-sm text-indigo-600 hover:underline">

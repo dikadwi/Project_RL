@@ -111,41 +111,36 @@ def get_top_actions(skor_vark, skor_mlsq, skor_ams, engagement, limit=3):
     return state_str, rows  # rows berisi action_code dan q_value
 
 
-# Rekomendasi misi & reward berdasarkan action code
-def get_rekomendasi_dari_action(state, action_code, misi_limit=3, reward_limit=2):
-    """Kembalikan rekomendasi berdasarkan state dan action_code.
+# Rekomendasi berdasarkan action code
+def get_rekomendasi_dari_action(action_code, limit=5):
+    """Ambil daftar rekomendasi berdasarkan ``action_code``.
 
-    Action code:
-        101: reward
-        105: misi
-    Kode lain belum memiliki rekomendasi spesifik sehingga mengembalikan list kosong.
+    Mapping kode:
+        101 -> reward
+        102 -> produk (pembelian)
+        103 -> hukuman
+        105 -> misi
+        106 -> pelatihan/konsultasi
     """
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
-    if not state:
-        return [], []
+    table_map = {
+        101: "reward",
+        102: "produk",
+        103: "hukuman",
+        105: "misi",
+        106: "pelatihan",
+    }
 
-    try:
-        vark, mlsq, ams, *_ = state.split("-")
-    except ValueError:
-        return [], []
+    table = table_map.get(action_code)
+    if not table:
+        cursor.close()
+        return {}
 
-    misi, reward = [], []
-    if action_code == 105:  # misi
-        cursor.execute(
-            "SELECT * FROM misi WHERE vark = %s AND mlsq = %s AND ams = %s ORDER BY RAND() LIMIT %s",
-            (vark, mlsq, ams, misi_limit),
-        )
-        misi = cursor.fetchall()
-    elif action_code == 101:  # reward
-        cursor.execute(
-            "SELECT * FROM reward WHERE vark_bonus = %s AND ams_target = %s ORDER BY poin_dibutuhkan ASC LIMIT %s",
-            (vark, ams, reward_limit),
-        )
-        reward = cursor.fetchall()
-
+    cursor.execute(f"SELECT * FROM {table} ORDER BY RAND() LIMIT %s", (limit,))
+    items = cursor.fetchall()
     cursor.close()
-    return misi, reward
+    return {table: items}
 
 
 def update_q_value(state, action_code, reward, alpha=0.1, gamma=0.9):
