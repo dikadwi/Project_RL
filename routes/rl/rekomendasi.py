@@ -34,19 +34,18 @@ def rekomendasi():
     for a in top_actions:
         a["action_name"] = action_map.get(a["action_code"], str(a["action_code"]))
 
-    rekom_misi, rekom_reward = get_rekomendasi_dari_action(
-        state_str, top_actions[0]["action_code"], misi_limit=5, reward_limit=5
-    )
+    best_action = top_actions[0]["action_code"] if top_actions else None
+    rekomendasi = get_rekomendasi_dari_action(best_action) if best_action else {}
 
     # Simpan log
-    simpan_log_rekomendasi(siswa_id, state_str, top_actions[0]["action_code"])
+    if best_action is not None:
+        simpan_log_rekomendasi(siswa_id, state_str, best_action)
 
     return render_template(
         "rl/rekomendasi.html",
         state=state_str,
         top_actions=top_actions,
-        rekom_misi=rekom_misi,
-        rekom_reward=rekom_reward,
+        rekomendasi=rekomendasi,
         skor_vark=skor_vark,
         skor_mlsq=skor_mlsq,
         skor_ams=skor_ams,
