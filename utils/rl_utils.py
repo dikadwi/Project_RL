@@ -91,45 +91,93 @@ def build_state(skor_vark, skor_mlsq, skor_ams, engagement):
 
 # Ambil best action dari Q-table
 def get_top_actions(skor_vark, skor_mlsq, skor_ams, engagement, limit=3):
+    """Ambil daftar action_code dengan Q-value tertinggi untuk state tertentu."""
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     state_str = build_state(skor_vark, skor_mlsq, skor_ams, engagement)
 
     cursor.execute(
-        "SELECT * FROM q_table WHERE state = %s ORDER BY q_value DESC LIMIT %s",
+        """
+        SELECT action_code, q_value
+        FROM q_table
+        WHERE state = %s
+        ORDER BY q_value DESC
+        LIMIT %s
+        """,
         (state_str, limit),
     )
     rows = cursor.fetchall()
     cursor.close()
 
-    return state_str, rows  # rows = list of actions
+    return state_str, rows  # rows berisi action_code dan q_value
 
 
-# Rekomendasi misi & reward berdasarkan action
-def get_rekomendasi_dari_action(action, misi_limit=3, reward_limit=2):
+# Rekomendasi misi & reward berdasarkan action code
+def get_rekomendasi_dari_action(state, action_code, misi_limit=3, reward_limit=2):
+    """Kembalikan rekomendasi berdasarkan state dan action_code.
+
+    Action code:
+        101: reward
+        105: misi
+    Kode lain belum memiliki rekomendasi spesifik sehingga mengembalikan list kosong.
+    """
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
-    if not action:
+    if not state:
         return [], []
 
     try:
-        vark, mlsq, ams, *_ = action.split("-")
+        vark, mlsq, ams, *_ = state.split("-")
     except ValueError:
         return [], []
 
-    cursor.execute(
-        "SELECT * FROM misi WHERE vark = %s AND mlsq = %s AND ams = %s ORDER BY RAND() LIMIT %s",
-        (vark, mlsq, ams, misi_limit),
-    )
-    misi = cursor.fetchall()
-
-    cursor.execute(
-        "SELECT * FROM reward WHERE vark_bonus = %s AND ams_target = %s ORDER BY poin_dibutuhkan ASC LIMIT %s",
-        (vark, ams, reward_limit),
-    )
-    reward = cursor.fetchall()
+    misi, reward = [], []
+    if action_code == 105:  # misi
+        cursor.execute(
+            "SELECT * FROM misi WHERE vark = %s AND mlsq = %s AND ams = %s ORDER BY RAND() LIMIT %s",
+            (vark, mlsq, ams, misi_limit),
+        )
+        misi = cursor.fetchall()
+    elif action_code == 101:  # reward
+        cursor.execute(
+            "SELECT * FROM reward WHERE vark_bonus = %s AND ams_target = %s ORDER BY poin_dibutuhkan ASC LIMIT %s",
+            (vark, ams, reward_limit),
+        )
+        reward = cursor.fetchall()
 
     cursor.close()
     return misi, reward
+
+
+def update_q_value(state, action_code, reward, alpha=0.1, gamma=0.9):
+    """Perbarui nilai Q pada tabel berdasarkan feedback yang diterima."""
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Ambil Q-value saat ini
+    cursor.execute(
+        "SELECT q_value FROM q_table WHERE state = %s AND action_code = %s",
+        (state, action_code),
+    )
+    row = cursor.fetchone()
+    current_q = row["q_value"] if row else 0.0
+
+    # Ambil Q-value maksimum untuk state yang sama
+    cursor.execute(
+        "SELECT MAX(q_value) AS max_q FROM q_table WHERE state = %s",
+        (state,),
+    )
+    max_q_row = cursor.fetchone()
+    max_q = max_q_row["max_q"] if max_q_row and max_q_row["max_q"] is not None else 0.0
+
+    # Rumus Q-learning
+    new_q = current_q + alpha * (reward + gamma * max_q - current_q)
+
+    cursor.execute(
+        "UPDATE q_table SET q_value = %s WHERE state = %s AND action_code = %s",
+        (new_q, state, action_code),
+    )
+    mysql.connection.commit()
+    cursor.close()
+    return new_q
 
 
 # Simpan log rekomendasi
