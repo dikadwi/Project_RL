@@ -16,6 +16,28 @@ class User(UserMixin):
     def from_siswa(self):
         return self.role == 'siswa'  # bisa dipakai di template
 
+    def get_engagement(self):
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute(
+            """
+            SELECT COUNT(*) AS freq, COALESCE(SUM(duration_seconds), 0) AS total_dur
+            FROM activity_log
+            WHERE user_id = %s AND start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            """,
+            (self.id,),
+        )
+        data = cursor.fetchone() or {"freq": 0, "total_dur": 0}
+        cursor.close()
+
+        freq = data["freq"]
+        dur = data["total_dur"]
+
+        if freq >= 10 or dur >= 3600:
+            return "m3_f3_a3"
+        if freq >= 5 or dur >= 1800:
+            return "m2_f2_a2"
+        return "m1_f1_a1"
+
 # Fungsi load_user untuk Flask-Login
 
 
