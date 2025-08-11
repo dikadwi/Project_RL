@@ -5,31 +5,7 @@ import MySQLdb.cursors
 ACTION_CODES = [101, 105, 102, 103, 106]
 
 
-# Hitung engagement berdasarkan frekuensi dan durasi interaksi
-def hitung_engagement(siswa_id):
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute(
-        """
-        SELECT COUNT(*) AS freq, COALESCE(SUM(duration_seconds), 0) AS total_dur
-        FROM activity_log
-        WHERE user_id = %s AND start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-        """,
-        (siswa_id,),
-    )
-    data = cursor.fetchone() or {"freq": 0, "total_dur": 0}
-    cursor.close()
-
-    freq = data["freq"]
-    dur = data["total_dur"]
-
-    if freq >= 10 or dur >= 3600:
-        return "m3_f3_a3"
-    if freq >= 5 or dur >= 1800:
-        return "m2_f2_a2"
-    return "m1_f1_a1"
-
-
-# Ambil skor VARK, MLSQ, AMS dan engagement dari tabel scores berdasarkan siswa_id
+# Ambil skor VARK, MLSQ, dan AMS dari tabel scores berdasarkan siswa_id
 def ambil_skor_dari_db(siswa_id):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
@@ -68,8 +44,7 @@ def ambil_skor_dari_db(siswa_id):
 
     cursor.close()
 
-    engagement = hitung_engagement(siswa_id)
-    return skor_vark, skor_mlsq, skor_ams, engagement
+    return skor_vark, skor_mlsq, skor_ams
 
 
 # Buat state string dari skor-skor

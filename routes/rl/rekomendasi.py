@@ -17,8 +17,9 @@ rekomendasi_bp = Blueprint("rekomendasi", __name__, url_prefix='/rl')
 def rekomendasi():
     siswa_id = current_user.id
 
-    # Ambil skor termasuk engagement
-    skor_vark, skor_mlsq, skor_ams, engagement = ambil_skor_dari_db(siswa_id)
+    # Ambil skor dan hitung engagement melalui model User
+    skor_vark, skor_mlsq, skor_ams = ambil_skor_dari_db(siswa_id)
+    engagement = current_user.get_engagement()
 
     # Bangun state & top actions
     state_str, top_actions = get_top_actions(
