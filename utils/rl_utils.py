@@ -2,6 +2,9 @@ from db import mysql
 import MySQLdb.cursors
 
 
+ACTION_CODES = [101, 105, 102, 103, 106]
+
+
 # Hitung engagement berdasarkan frekuensi dan durasi interaksi
 def hitung_engagement(siswa_id):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -109,6 +112,22 @@ def get_top_actions(skor_vark, skor_mlsq, skor_ams, engagement, limit=3):
     cursor.close()
 
     return state_str, rows  # rows berisi action_code dan q_value
+
+
+def init_state_actions(state):
+    """Inisialisasi pasangan state-action di q_table jika belum ada."""
+    cursor = mysql.connection.cursor()
+    for code in ACTION_CODES:
+        cursor.execute(
+            """
+            INSERT INTO q_table (state, action_code, q_value)
+            VALUES (%s, %s, %s)
+            ON DUPLICATE KEY UPDATE q_value = q_value
+            """,
+            (state, code, 0.0),
+        )
+    mysql.connection.commit()
+    cursor.close()
 
 
 # Rekomendasi berdasarkan action code

@@ -5,6 +5,10 @@
 <div class="max-w-5xl mx-auto p-6 bg-white rounded-lg shadow-md space-y-8">
     <h2 class="text-2xl font-bold text-indigo-700">🎯 Rekomendasi Berdasarkan Skor Anda</h2>
 
+    {% if message %}
+    <div class="text-gray-500 text-sm">{{ message }}</div>
+    {% endif %}
+
     <!-- Skor State -->
     <section>
         <h3 class="text-lg font-semibold text-gray-700 mb-2">🧠 State Saat Ini (Skor)</h3>
