@@ -4,6 +4,7 @@ from utils.rl_utils import (
     ambil_skor_dari_db,
     get_top_actions,
     get_rekomendasi_dari_action,
+    init_state_actions,
     simpan_log_rekomendasi,
     update_q_value,
 )
@@ -23,6 +24,20 @@ def rekomendasi():
     state_str, top_actions = get_top_actions(
         skor_vark, skor_mlsq, skor_ams, engagement, limit=3)
 
+    if not top_actions:
+        init_state_actions(state_str)
+        return render_template(
+            "rl/rekomendasi.html",
+            state=state_str,
+            top_actions=[],
+            rekomendasi={},
+            skor_vark=skor_vark,
+            skor_mlsq=skor_mlsq,
+            skor_ams=skor_ams,
+            engagement=engagement,
+            message="Rekomendasi belum tersedia."
+        )
+
     action_map = {
         101: "reward",
         105: "misi",
@@ -34,12 +49,11 @@ def rekomendasi():
     for a in top_actions:
         a["action_name"] = action_map.get(a["action_code"], str(a["action_code"]))
 
-    best_action = top_actions[0]["action_code"] if top_actions else None
-    rekomendasi = get_rekomendasi_dari_action(best_action) if best_action else {}
+    best_action = top_actions[0]["action_code"]
+    rekomendasi = get_rekomendasi_dari_action(best_action)
 
     # Simpan log
-    if best_action is not None:
-        simpan_log_rekomendasi(siswa_id, state_str, best_action)
+    simpan_log_rekomendasi(siswa_id, state_str, best_action)
 
     return render_template(
         "rl/rekomendasi.html",
